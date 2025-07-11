@@ -2,12 +2,27 @@
 .logo-image {
   /* Transparent images work great, but we can add subtle effects */
   transition: filter 0.3s ease;
+  /* Force transparent background for any cached white bg images */
+  background: transparent !important;
+  /* Remove any white backgrounds that might be embedded */
+  mix-blend-mode: multiply;
+}
+
+/* Mobile-specific fixes for cached images */
+@supports (-webkit-appearance: none) {
+  .logo-image {
+    /* Safari/iOS specific background removal */
+    background-color: transparent !important;
+    background-image: none !important;
+  }
 }
 
 /* Optional: Add slight glow in dark mode */
 @media (prefers-color-scheme: dark) {
   .logo-image {
     filter: drop-shadow(0 0 8px rgba(37, 99, 235, 0.3));
+    /* In dark mode, if image still has white bg, invert it */
+    mix-blend-mode: screen;
   }
 }
 
@@ -15,5 +30,7 @@
 @media (prefers-color-scheme: light) {
   .logo-image {
     filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+    /* Light mode uses multiply to remove white backgrounds */
+    mix-blend-mode: multiply;
   }
 }
