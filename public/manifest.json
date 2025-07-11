@@ -1,0 +1,50 @@
+{
+  "name": "Campus Connect - Connecting Brilliant Minds Worldwide",
+  "short_name": "Campus Connect",
+  "description": "A revolutionary platform connecting students from universities worldwide",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#2563eb",
+  "orientation": "portrait-primary",
+  "categories": ["education", "social", "networking"],
+  "lang": "en",
+  "dir": "ltr",
+  "icons": [
+    {
+      "src": "/favicon.ico",
+      "sizes": "64x64 32x32 24x24 16x16",
+      "type": "image/x-icon"
+    },
+    {
+      "src": "/CAMPUSCONNECT.png",
+      "type": "image/png",
+      "sizes": "512x512",
+      "purpose": "any maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/CAMPUSCONNECT.png",
+      "type": "image/png",
+      "sizes": "512x512",
+      "form_factor": "wide"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Discover Students",
+      "short_name": "Discover",
+      "description": "Find students from universities worldwide",
+      "url": "/discover",
+      "icons": [{ "src": "/CAMPUSCONNECT.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "My Profile",
+      "short_name": "Profile",
+      "description": "View and edit your profile",
+      "url": "/profile",
+      "icons": [{ "src": "/CAMPUSCONNECT.png", "sizes": "192x192" }]
+    }
+  ]
+}
