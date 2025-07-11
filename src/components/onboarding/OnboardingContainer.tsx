@@ -71,7 +71,7 @@ export function OnboardingContainer({ children, className = "" }: OnboardingCont
     window.matchMedia("(prefers-reduced-motion: reduce)").matches : false;
   
   return (
-    <div className="min-h-screen relative flex items-center justify-center p-6">
+    <div className="h-screen w-screen fixed inset-0 flex items-center justify-center p-4 sm:p-6 overflow-auto">
       <AnimatedBackground />
       
       <motion.div
@@ -93,8 +93,8 @@ export function OnboardingContainer({ children, className = "" }: OnboardingCont
           ease: [0.21, 1, 0.81, 1] // Professional easing curve
         }}
       >
-        {/* Clean, professional content container */}
-        <div className="bg-white rounded-3xl p-8 sm:p-12 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100/60">
+        {/* Clean, professional content container with viewport constraints */}
+        <div className="bg-white rounded-3xl p-6 sm:p-8 lg:p-12 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100/60 max-h-[calc(100vh-3rem)] overflow-y-auto">
           {children}
         </div>
       </motion.div>

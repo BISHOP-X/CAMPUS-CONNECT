@@ -2,6 +2,34 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Viewport lock for onboarding pages */
+html, body {
+  height: 100%;
+  overflow-x: hidden;
+}
+
+/* Lock screen for onboarding forms */
+.onboarding-screen {
+  height: 100vh;
+  width: 100vw;
+  position: fixed;
+  top: 0;
+  left: 0;
+  overflow: hidden;
+}
+
+/* Allow scrolling only when content exceeds viewport */
+.onboarding-content {
+  max-height: 100vh;
+  overflow-y: auto;
+  scroll-behavior: smooth;
+}
+
+/* Smooth scrolling for content that needs it */
+.onboarding-content {
+  scroll-behavior: smooth;
+}
+
 /* Campus Connect Design System - Academic focused color palette and typography */
 
 @layer base {
