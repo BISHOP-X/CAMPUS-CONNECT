@@ -1,5 +1,6 @@
 import { motion } from "framer-motion";
 import { OnboardingContainer } from "./OnboardingContainer";
+import { usePWAInstall } from "../../hooks/usePWAInstall";
 
 interface WelcomeMessageProps {
   onComplete: () => void;
@@ -7,6 +8,8 @@ interface WelcomeMessageProps {
 }
 
 export function WelcomeMessage({ onComplete, firstName }: WelcomeMessageProps) {
+  const { isInstallable, installApp } = usePWAInstall();
+
   return (
     <OnboardingContainer>
       <motion.div
@@ -176,6 +179,18 @@ export function WelcomeMessage({ onComplete, firstName }: WelcomeMessageProps) {
 
           {/* Secondary Actions */}
           <div className="flex flex-col sm:flex-row gap-4">
+            {isInstallable && (
+              <motion.button
+                onClick={() => installApp()}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                className="flex-1 py-3 px-6 bg-gradient-to-r from-green-500 to-green-600 text-white border border-green-500 rounded-xl font-medium
+                           hover:from-green-600 hover:to-green-700 hover:border-green-600 transition-all duration-200
+                           focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 shadow-[0_4px_12px_rgba(34,197,94,0.3)]"
+              >
+                📱 Install App
+              </motion.button>
+            )}
             <motion.button
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
