@@ -10,6 +10,7 @@
   "categories": ["education", "social", "networking"],
   "lang": "en",
   "dir": "ltr",
+  "scope": "/",
   "icons": [
     {
       "src": "/favicon.ico",
@@ -19,8 +20,20 @@
     {
       "src": "/CAMPUSCONNECT.png",
       "type": "image/png",
+      "sizes": "192x192",
+      "purpose": "any"
+    },
+    {
+      "src": "/CAMPUSCONNECT.png",
+      "type": "image/png", 
       "sizes": "512x512",
-      "purpose": "any maskable"
+      "purpose": "any"
+    },
+    {
+      "src": "/CAMPUSCONNECT.png",
+      "type": "image/png",
+      "sizes": "192x192",
+      "purpose": "maskable"
     }
   ],
   "screenshots": [

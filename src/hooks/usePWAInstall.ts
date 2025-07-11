@@ -16,6 +16,7 @@ export function usePWAInstall() {
 
   useEffect(() => {
     const handleBeforeInstallPrompt = (e: Event) => {
+      console.log('🎯 PWA Install prompt available!', e);
       // Prevent the mini-infobar from appearing on mobile
       e.preventDefault();
       // Store the event so it can be triggered later
@@ -24,6 +25,7 @@ export function usePWAInstall() {
     };
 
     const handleAppInstalled = () => {
+      console.log('✅ PWA App installed successfully!');
       setIsInstalled(true);
       setIsInstallable(false);
       setInstallPrompt(null);
@@ -31,9 +33,11 @@ export function usePWAInstall() {
 
     // Check if app is already installed
     if (window.matchMedia('(display-mode: standalone)').matches) {
+      console.log('📱 PWA already running in standalone mode');
       setIsInstalled(true);
     }
 
+    console.log('🔄 Setting up PWA install listeners...');
     window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
     window.addEventListener('appinstalled', handleAppInstalled);
 

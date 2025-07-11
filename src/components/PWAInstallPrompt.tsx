@@ -1,12 +1,23 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { usePWAInstall } from "../hooks/usePWAInstall";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 export function PWAInstallPrompt() {
   const { isInstallable, installApp } = usePWAInstall();
   const [isDismissed, setIsDismissed] = useState(false);
+  const [showPrompt, setShowPrompt] = useState(false);
 
-  if (!isInstallable || isDismissed) return null;
+  // Show prompt after 3 seconds delay
+  useEffect(() => {
+    if (isInstallable && !isDismissed) {
+      const timer = setTimeout(() => {
+        setShowPrompt(true);
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [isInstallable, isDismissed]);
+
+  if (!isInstallable || isDismissed || !showPrompt) return null;
 
   const handleInstall = async () => {
     const success = await installApp();
