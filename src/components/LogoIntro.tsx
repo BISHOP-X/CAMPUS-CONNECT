@@ -1,5 +1,7 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { useState, useEffect } from "react";
+import "./logo-styles.css";
+import { LOGO_URL } from "../lib/images";
 
 interface LogoIntroProps {
   onComplete: () => void;
@@ -62,9 +64,9 @@ export function LogoIntro({ onComplete }: LogoIntroProps) {
             className="flex flex-col items-center justify-center space-y-6"
           >
             <img 
-              src="/CAMPUSCONNECT.png" 
+              src={LOGO_URL}
               alt="Campus Connect" 
-              className="max-w-sm w-full h-auto"
+              className="max-w-sm w-full h-auto logo-image"
             />
                 <motion.p 
             className="text-slate-600 text-sm tracking-wide font-light"

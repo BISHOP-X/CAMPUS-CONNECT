@@ -1,6 +1,7 @@
-import { useState } from "react";
 import { motion } from "framer-motion";
 import { OnboardingContainer } from "./OnboardingContainer";
+import { useState } from "react";
+import { LOGO_URL } from "../../lib/images";
 
 interface NameFormProps {
   onNext: () => void;
@@ -43,9 +44,9 @@ export function NameForm({ onNext, onUpdateData, initialFirstName = "", initialL
           className="flex justify-center mb-8"
         >
           <img 
-            src="/CAMPUSCONNECT.png" 
+            src={LOGO_URL} 
             alt="Campus Connect Logo"
-            className="h-12 w-auto"
+            className="h-12 w-auto logo-image"
           />
         </motion.div>
 

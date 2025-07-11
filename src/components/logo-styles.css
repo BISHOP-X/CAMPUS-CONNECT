@@ -1,0 +1,19 @@
+/* Dark mode adaptive images */
+.logo-image {
+  /* Transparent images work great, but we can add subtle effects */
+  transition: filter 0.3s ease;
+}
+
+/* Optional: Add slight glow in dark mode */
+@media (prefers-color-scheme: dark) {
+  .logo-image {
+    filter: drop-shadow(0 0 8px rgba(37, 99, 235, 0.3));
+  }
+}
+
+/* Light mode - clean look */
+@media (prefers-color-scheme: light) {
+  .logo-image {
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+  }
+}
