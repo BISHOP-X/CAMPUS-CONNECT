@@ -1,0 +1,153 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Campus Connect Design System - Academic focused color palette and typography */
+
+@layer base {
+  :root {
+    /* Campus Connect Brand Colors */
+    --background: 210 40% 98%; /* slate-50 for main background */
+    --foreground: 215.4 16.3% 26.9%; /* slate-800 for text */
+
+    --card: 0 0% 100%; /* white for content cards */
+    --card-foreground: 215.4 16.3% 26.9%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 215.4 16.3% 26.9%;
+
+    /* Academic Blue Primary */
+    --primary: 217.2 91.2% 59.8%; /* #2563EB academic blue */
+    --primary-foreground: 0 0% 100%;
+    --primary-hover: 217.2 91.2% 54%; /* slightly darker on hover */
+
+    /* Soft Gray Secondary */
+    --secondary: 210 40% 94%; /* slate-100 */
+    --secondary-foreground: 215.4 16.3% 26.9%;
+
+    --muted: 210 40% 96.1%; /* slate-50 */
+    --muted-foreground: 215.4 16.3% 46.9%; /* slate-500 */
+
+    --accent: 210 40% 94%;
+    --accent-foreground: 215.4 16.3% 26.9%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 214.3 31.8% 91.4%; /* slate-200 */
+    --input: 214.3 31.8% 91.4%;
+    --ring: 217.2 91.2% 59.8%; /* matches primary */
+
+    --radius: 0.5rem;
+
+    /* Campus Connect Gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(var(--primary)), hsl(217.2 91.2% 54%));
+    --gradient-card: linear-gradient(145deg, hsl(var(--card)), hsl(210 40% 99%));
+    
+    /* Shadows */
+    --shadow-soft: 0 4px 6px -1px hsl(215.4 16.3% 46.9% / 0.1), 0 2px 4px -1px hsl(215.4 16.3% 46.9% / 0.06);
+    --shadow-card: 0 10px 15px -3px hsl(215.4 16.3% 46.9% / 0.1), 0 4px 6px -2px hsl(215.4 16.3% 46.9% / 0.05);
+    
+    /* Animations */
+    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-fast: all 0.15s ease-out;
+
+    --sidebar-background: 0 0% 100%;
+
+    --sidebar-foreground: 215.4 16.3% 26.9%;
+
+    --sidebar-primary: 217.2 91.2% 59.8%;
+
+    --sidebar-primary-foreground: 0 0% 100%;
+
+    --sidebar-accent: 210 40% 96%;
+
+    --sidebar-accent-foreground: 215.4 16.3% 26.9%;
+
+    --sidebar-border: 214.3 31.8% 91.4%;
+
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+
+  .dark {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+
+    --primary: 210 40% 98%;
+    --primary-foreground: 222.2 47.4% 11.2%;
+
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 212.7 26.8% 83.9%;
+    --sidebar-background: 240 5.9% 10%;
+    --sidebar-foreground: 240 4.8% 95.9%;
+    --sidebar-primary: 224.3 76.3% 48%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 240 3.7% 15.9%;
+    --sidebar-accent-foreground: 240 4.8% 95.9%;
+    --sidebar-border: 240 3.7% 15.9%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+  }
+}
+
+@layer components {
+  /* Campus Connect Custom Components */
+  .auth-card {
+    @apply bg-card border border-border rounded-lg shadow-[var(--shadow-card)] p-8 w-full max-w-md mx-auto;
+  }
+  
+  .auth-input {
+    @apply transition-[var(--transition-fast)] border-input focus:border-ring focus:ring-2 focus:ring-ring/20;
+  }
+  
+  .btn-primary {
+    @apply bg-primary hover:bg-[hsl(var(--primary-hover))] text-primary-foreground transition-[var(--transition-fast)] transform hover:scale-[1.02] active:scale-[0.98];
+  }
+  
+  .btn-smooth {
+    @apply transition-[var(--transition-smooth)] hover:shadow-[var(--shadow-soft)];
+  }
+
+  /* Interactive Elements */
+  .story-link {
+    @apply relative inline-block after:content-[''] after:absolute after:w-full after:scale-x-0 after:h-0.5 after:bottom-0 after:left-0 after:bg-primary after:origin-bottom-right after:transition-transform after:duration-300 hover:after:scale-x-100 hover:after:origin-bottom-left;
+  }
+  
+  .hover-scale {
+    @apply transition-transform duration-200 hover:scale-105;
+  }
+
+  /* Page Transitions */
+  .page-transition {
+    @apply animate-fade-in;
+  }
+}
