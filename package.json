@@ -1,7 +1,32 @@
 {
-  "name": "vite_react_shadcn_ts",
-  "private": true,
-  "version": "0.0.0",
+  "name": "campus-connect",
+  "private": false,
+  "version": "1.0.0",
+  "description": "A revolutionary platform connecting brilliant minds across universities worldwide",
+  "keywords": [
+    "university",
+    "students",
+    "collaboration",
+    "education",
+    "global-network",
+    "academic",
+    "react",
+    "typescript",
+    "campus-connect"
+  ],
+  "author": {
+    "name": "Wisdom",
+    "url": "https://github.com/BISHOP-X"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/BISHOP-X/CAMPUS-CONNECT.git"
+  },
+  "bugs": {
+    "url": "https://github.com/BISHOP-X/CAMPUS-CONNECT/issues"
+  },
+  "homepage": "https://github.com/BISHOP-X/CAMPUS-CONNECT",
+  "license": "MIT",
   "type": "module",
   "scripts": {
     "dev": "vite",
