@@ -2,10 +2,107 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Viewport lock for onboarding pages */
+/* Prevent auto-keyboard popup on iOS and improve mobile UX */
+input[type="text"],
+input[type="email"],
+input[type="password"],
+textarea {
+  /* Prevent auto-zoom on iOS when focusing inputs */
+  font-size: 16px;
+  /* Disable auto-capitalization and auto-correction for better UX */
+  -webkit-autocapitalize: none;
+  -webkit-autocorrect: off;
+  autocapitalize: none;
+  autocorrect: off;
+  /* Prevent iOS from automatically focusing */
+  -webkit-user-select: text;
+  user-select: text;
+}
+
+/* Better mobile input styling */
+@media (max-width: 768px) {
+  input[type="text"],
+  input[type="email"], 
+  input[type="password"],
+  textarea {
+    /* Ensure minimum font size to prevent zoom */
+    font-size: 16px !important;
+    /* Better tap targets */
+    min-height: 44px;
+  }
+}
+
+/* iOS Dark Mode Fixes - Prevent white square images */
+.logo-image {
+  /* Safari/WebKit compatibility */
+  -webkit-appearance: none;
+  appearance: none;
+  -webkit-background-clip: padding-box;
+  background-clip: padding-box;
+  /* Force image rendering without background pollution */
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: crisp-edges;
+  /* Prevent iOS from adding white backgrounds */
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+}
+
+/* Force transparent backgrounds for all images in dark mode */
+@media (prefers-color-scheme: dark) {
+  /* Root color scheme declaration for iOS */
+  :root {
+    color-scheme: light dark;
+  }
+  
+  /* Comprehensive iOS dark mode image fixes */
+  .logo-image,
+  .logo-image.ios-dark-mode,
+  img[src*="CAMPUSCONNECT"],
+  img[class*="logo"] {
+    /* Remove all possible background sources */
+    background: none !important;
+    background-color: transparent !important;
+    background-image: none !important;
+    /* iOS-specific transparency enforcement */
+    -webkit-background-composite: source-over !important;
+    /* Prevent Safari from rendering white squares */
+    box-shadow: none !important;
+    border: none !important;
+    /* Image rendering optimizations for iOS */
+    image-rendering: -webkit-optimize-contrast !important;
+    /* Force proper alpha channel handling */
+    -webkit-user-select: none !important;
+    user-select: none !important;
+    /* Prevent any iOS compositing issues */
+    isolation: isolate !important;
+    contain: paint !important;
+  }
+  
+  /* Additional iOS Safari specific fixes */
+  @supports (-webkit-touch-callout: none) {
+    .logo-image {
+      /* iOS Safari specific transparency fix */
+      -webkit-mask-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg"><defs><mask id="mask"><rect width="100%" height="100%" fill="white"/></mask></defs></svg>') !important;
+      -webkit-mask-size: 100% 100% !important;
+      -webkit-mask-repeat: no-repeat !important;
+    }
+  }
+}
+
+/* Viewport lock for onboarding pages - Prevent glitches */
 html, body {
   height: 100%;
   overflow-x: hidden;
+  /* Prevent scroll glitches during transitions */
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+}
+
+/* Hide scrollbars completely to prevent glitches */
+html::-webkit-scrollbar,
+body::-webkit-scrollbar {
+  display: none;
 }
 
 /* Lock screen for onboarding forms */
@@ -16,6 +113,20 @@ html, body {
   top: 0;
   left: 0;
   overflow: hidden;
+  /* Prevent any scrollbar appearance during transitions */
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  /* Enable hardware acceleration */
+  transform: translate3d(0, 0, 0);
+  -webkit-transform: translate3d(0, 0, 0);
+  /* Force GPU compositing */
+  will-change: transform;
+  /* Reduce repaints and improve performance */
+  contain: layout paint;
+}
+
+.onboarding-screen::-webkit-scrollbar {
+  display: none;
 }
 
 /* Allow scrolling only when content exceeds viewport */
@@ -23,11 +134,18 @@ html, body {
   max-height: 100vh;
   overflow-y: auto;
   scroll-behavior: smooth;
+  /* Hide scrollbar but keep functionality */
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  transform: translate3d(0, 0, 0);
+  -webkit-transform: translate3d(0, 0, 0);
+  will-change: transform;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
 }
 
-/* Smooth scrolling for content that needs it */
-.onboarding-content {
-  scroll-behavior: smooth;
+.onboarding-content::-webkit-scrollbar {
+  display: none;
 }
 
 /* Campus Connect Design System - Academic focused color palette and typography */

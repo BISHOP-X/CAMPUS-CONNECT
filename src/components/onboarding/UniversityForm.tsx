@@ -22,6 +22,7 @@ export function UniversityForm({ onNext, onBack, onUpdateData, firstName, initia
   const [suggestions, setSuggestions] = useState<University[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const [selectedSuggestionIndex, setSelectedSuggestionIndex] = useState(-1);
 
   // Search universities as user types
   useEffect(() => {
@@ -30,19 +31,34 @@ export function UniversityForm({ onNext, onBack, onUpdateData, firstName, initia
         setIsLoading(true);
         try {
           const response = await fetch(
-            `http://universities.hipolabs.com/search?name=${encodeURIComponent(university)}`
+            `https://universities.hipolabs.com/search?name=${encodeURIComponent(university)}`
           );
+          
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+          
           const results = await response.json();
           setSuggestions(results.slice(0, 8)); // Show top 8 results
           setShowSuggestions(true);
+          setSelectedSuggestionIndex(-1);
         } catch (error) {
-          console.log('Search failed, continuing without suggestions');
-          setSuggestions([]);
+          console.log('University search failed:', error);
+          // Provide some common fallback suggestions
+          const fallbackSuggestions = [
+            { name: university + ' University', country: 'Unknown', 'state-province': null, domains: [] },
+            { name: university + ' College', country: 'Unknown', 'state-province': null, domains: [] },
+            { name: 'University of ' + university, country: 'Unknown', 'state-province': null, domains: [] }
+          ];
+          setSuggestions(fallbackSuggestions);
+          setShowSuggestions(true);
+          setSelectedSuggestionIndex(-1);
         }
         setIsLoading(false);
       } else {
         setSuggestions([]);
         setShowSuggestions(false);
+        setSelectedSuggestionIndex(-1);
       }
     };
 
@@ -62,6 +78,38 @@ export function UniversityForm({ onNext, onBack, onUpdateData, firstName, initia
     setUniversity(selectedUniversity.name);
     setShowSuggestions(false);
     setSuggestions([]);
+    setSelectedSuggestionIndex(-1);
+    // Update the form data immediately when a suggestion is selected
+    onUpdateData({ university: selectedUniversity.name });
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (!showSuggestions || suggestions.length === 0) return;
+
+    switch (e.key) {
+      case 'ArrowDown':
+        e.preventDefault();
+        setSelectedSuggestionIndex(prev => 
+          prev < suggestions.length - 1 ? prev + 1 : 0
+        );
+        break;
+      case 'ArrowUp':
+        e.preventDefault();
+        setSelectedSuggestionIndex(prev => 
+          prev > 0 ? prev - 1 : suggestions.length - 1
+        );
+        break;
+      case 'Enter':
+        e.preventDefault();
+        if (selectedSuggestionIndex >= 0) {
+          handleSuggestionClick(suggestions[selectedSuggestionIndex]);
+        }
+        break;
+      case 'Escape':
+        setShowSuggestions(false);
+        setSelectedSuggestionIndex(-1);
+        break;
+    }
   };
 
   const canProceed = university.trim().length > 0;
@@ -85,7 +133,7 @@ export function UniversityForm({ onNext, onBack, onUpdateData, firstName, initia
           <img 
             src="/CAMPUSCONNECT.png" 
             alt="Campus Connect Logo"
-            className="h-12 w-auto"
+            className="h-12 w-auto logo-image"
           />
         </motion.div>
 
@@ -125,16 +173,29 @@ export function UniversityForm({ onNext, onBack, onUpdateData, firstName, initia
                 id="university"
                 type="text"
                 value={university}
-                onChange={(e) => setUniversity(e.target.value)}
-                onFocus={() => university.length > 2 && setShowSuggestions(true)}
-                onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
+                onChange={(e) => {
+                  setUniversity(e.target.value);
+                  setSelectedSuggestionIndex(-1);
+                }}
+                onKeyDown={handleKeyDown}
+                onFocus={() => {
+                  if (university.length > 2 && suggestions.length > 0) {
+                    setShowSuggestions(true);
+                  }
+                }}
+                onBlur={() => {
+                  // Delay hiding suggestions to allow clicking
+                  setTimeout(() => {
+                    setShowSuggestions(false);
+                    setSelectedSuggestionIndex(-1);
+                  }, 300);
+                }}
                 placeholder="Start typing your university name..."
                 className="w-full px-4 py-4 text-lg border-2 border-slate-200 rounded-xl
                          focus:border-[#2563eb] focus:ring-0 focus:outline-none
                          transition-all duration-200 placeholder:text-slate-400
                          bg-white/80 backdrop-blur-sm"
                 autoComplete="organization"
-                autoFocus
                 whileFocus={{ scale: 1.02 }}
                 transition={{ type: "spring", stiffness: 300, damping: 30 }}
               />
@@ -150,29 +211,39 @@ export function UniversityForm({ onNext, onBack, onUpdateData, firstName, initia
             {/* Search Suggestions Dropdown */}
             {showSuggestions && suggestions.length > 0 && (
               <motion.div
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                className="absolute z-10 w-full mt-1 bg-white border border-slate-200 rounded-xl shadow-lg max-h-64 overflow-y-auto"
+                initial={{ opacity: 0, y: -10, scale: 0.95 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: -10, scale: 0.95 }}
+                transition={{ duration: 0.2, ease: "easeOut" }}
+                className="absolute z-50 w-full mt-2 bg-white border border-slate-200 rounded-xl shadow-lg max-h-64 overflow-y-auto backdrop-blur-sm"
+                style={{ boxShadow: '0 10px 25px rgba(0, 0, 0, 0.1)' }}
               >
-                {suggestions.map((suggestion, index) => (
-                  <motion.button
-                    key={index}
-                    type="button"
-                    onClick={() => handleSuggestionClick(suggestion)}
-                    className="w-full px-4 py-3 text-left hover:bg-blue-50 hover:text-[#2563eb] 
-                             transition-colors duration-150 border-b border-slate-100 last:border-b-0
-                             focus:outline-none focus:bg-blue-50"
-                    whileHover={{ x: 4 }}
-                    transition={{ type: "spring", stiffness: 400, damping: 30 }}
-                  >
-                    <div className="font-medium text-slate-900">{suggestion.name}</div>
-                    <div className="text-sm text-slate-500">
-                      {suggestion.country}
-                      {suggestion["state-province"] && `, ${suggestion["state-province"]}`}
-                    </div>
-                  </motion.button>
-                ))}
+                <div className="py-2">
+                  {suggestions.map((suggestion, index) => (
+                    <motion.button
+                      key={`${suggestion.name}-${index}`}
+                      type="button"
+                      onClick={() => handleSuggestionClick(suggestion)}
+                      onMouseDown={(e) => e.preventDefault()} // Prevent input blur
+                      onMouseEnter={() => setSelectedSuggestionIndex(index)}
+                      className={`w-full px-4 py-3 text-left transition-colors duration-150 border-b border-slate-100 last:border-b-0
+                               focus:outline-none active:bg-blue-100 ${
+                                 index === selectedSuggestionIndex
+                                   ? 'bg-blue-50 text-[#2563eb]'
+                                   : 'hover:bg-blue-50 hover:text-[#2563eb]'
+                               }`}
+                      whileHover={{ x: 4 }}
+                      whileTap={{ scale: 0.98 }}
+                      transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                    >
+                      <div className="font-medium text-slate-900 leading-tight">{suggestion.name}</div>
+                      <div className="text-sm text-slate-500 mt-1">
+                        {suggestion.country}
+                        {suggestion["state-province"] && `, ${suggestion["state-province"]}`}
+                      </div>
+                    </motion.button>
+                  ))}
+                </div>
               </motion.div>
             )}
           </div>

@@ -12,10 +12,18 @@ type Phase = "logo" | "welcome" | "setup" | "complete";
 export function LogoIntro({ onComplete }: LogoIntroProps) {
   const [phase, setPhase] = useState<Phase>("logo");
   const [showButton, setShowButton] = useState(false);
+  const [imageLoaded, setImageLoaded] = useState(false);
+  
+  // Preload the logo image to prevent glitches
+  useEffect(() => {
+    const img = new Image();
+    img.onload = () => setImageLoaded(true);
+    img.src = LOGO_URL;
+  }, []);
   
   useEffect(() => {
-    if (phase === "logo") {
-      // Logo auto-progression after 3.5 seconds
+    if (phase === "logo" && imageLoaded) {
+      // Logo auto-progression after 3.5 seconds, but only after image loads
       const timer = setTimeout(() => {
         setPhase("welcome");
       }, 3500);
@@ -30,7 +38,7 @@ export function LogoIntro({ onComplete }: LogoIntroProps) {
       }, 1700); // 1.2s fade + 0.5s delay
       return () => clearTimeout(buttonTimer);
     }
-  }, [phase]);
+  }, [phase, imageLoaded]);
 
   const handleNext = () => {
     setShowButton(false);
@@ -54,29 +62,52 @@ export function LogoIntro({ onComplete }: LogoIntroProps) {
         {phase === "logo" && (
           <motion.div
             key="logo"
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.95 }}
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: imageLoaded ? 1 : 0, scale: imageLoaded ? 1 : 0.8 }}
+            exit={{ opacity: 0, scale: 1.05 }}
             transition={{ 
-              duration: 1.8,
-              ease: [0.25, 0.46, 0.45, 0.94]
+              duration: 1.2,
+              ease: [0.16, 1, 0.3, 1]
             }}
             className="flex flex-col items-center justify-center space-y-6"
           >
-            <img 
+            <motion.img 
               src={LOGO_URL}
               alt="Campus Connect" 
               className="max-w-sm w-full h-auto logo-image"
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ 
+                opacity: imageLoaded ? 1 : 0, 
+                scale: imageLoaded ? 1 : 0.9, 
+                y: imageLoaded ? 0 : 20 
+              }}
+              exit={{ opacity: 0, scale: 1.1, y: -20 }}
+              transition={{ 
+                duration: 1.0,
+                ease: [0.16, 1, 0.3, 1],
+                delay: imageLoaded ? 0.2 : 0
+              }}
+              style={{
+                willChange: 'transform, opacity',
+                backfaceVisibility: 'hidden',
+                perspective: 1000
+              }}
             />
-                <motion.p 
-            className="text-slate-600 text-sm tracking-wide font-light"
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 0.7, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            transition={{ delay: 0.8, duration: 1.2 }}
-          >
-            Connecting Academic Excellence
-          </motion.p>
+            {imageLoaded && (
+              <motion.p 
+                className="text-slate-600 text-sm tracking-wide font-light"
+                initial={{ opacity: 0, y: 15 }}
+                animate={{ opacity: 0.7, y: 0 }}
+                exit={{ opacity: 0, y: -15 }}
+                transition={{ 
+                  delay: 0.6, 
+                  duration: 0.8,
+                  ease: [0.16, 1, 0.3, 1]
+                }}
+              >
+                Connecting Academic Excellence
+              </motion.p>
+            )}
           </motion.div>
         )}
 
@@ -93,15 +124,19 @@ export function LogoIntro({ onComplete }: LogoIntroProps) {
             }}
             className="flex flex-col items-center justify-center h-screen relative"
           >
-            <motion.img 
-              src="/WELCOME.png"
-              alt="Welcome"
-              className="max-w-lg w-full h-auto"
+            <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
               transition={{ delay: 0.3, duration: 1.0 }}
-            />
+              className="flex flex-col items-center space-y-6 text-center max-w-lg"
+            >
+              <div className="text-8xl mb-4">👋</div>
+              <h1 className="text-4xl font-bold text-slate-900 mb-2">Welcome!</h1>
+              <p className="text-xl text-slate-600 font-light leading-relaxed">
+                Ready to connect with brilliant minds from universities worldwide?
+              </p>
+            </motion.div>
 
             <motion.button
               onClick={handleNext}
@@ -143,15 +178,19 @@ export function LogoIntro({ onComplete }: LogoIntroProps) {
             }}
             className="flex flex-col items-center justify-center h-screen relative"
           >
-            <motion.img 
-              src="/CONNECT.png"
-              alt="Let's get you connected"
-              className="max-w-lg w-full h-auto"
+            <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
               transition={{ delay: 0.3, duration: 1.0 }}
-            />
+              className="flex flex-col items-center space-y-6 text-center max-w-lg"
+            >
+              <div className="text-8xl mb-4">🌍</div>
+              <h1 className="text-4xl font-bold text-slate-900 mb-2">Let's Get You Connected</h1>
+              <p className="text-xl text-slate-600 font-light leading-relaxed">
+                Join thousands of students collaborating across continents and disciplines
+              </p>
+            </motion.div>
 
             <motion.button
               onClick={handleNext}

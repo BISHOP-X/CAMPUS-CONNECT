@@ -220,7 +220,6 @@ export function DisciplineForm({ onNext, onBack, onUpdateData, firstName, initia
                          transition-all duration-200 placeholder:text-slate-400
                          bg-white/80 backdrop-blur-sm"
                 autoComplete="organization-title"
-                autoFocus
                 whileFocus={{ scale: 1.02 }}
                 transition={{ type: "spring", stiffness: 300, damping: 30 }}
               />

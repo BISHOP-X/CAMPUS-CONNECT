@@ -93,7 +93,6 @@ export function NameForm({ onNext, onUpdateData, initialFirstName = "", initialL
                          transition-all duration-200 placeholder:text-slate-400
                          bg-white/80 backdrop-blur-sm"
                 autoComplete="given-name"
-                autoFocus
                 whileFocus={{ scale: 1.02 }}
                 transition={{ type: "spring", stiffness: 300, damping: 30 }}
               />
