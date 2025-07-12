@@ -13,13 +13,35 @@ export function LogoIntro({ onComplete }: LogoIntroProps) {
   const [phase, setPhase] = useState<Phase>("logo");
   const [showButton, setShowButton] = useState(false);
   const [imageLoaded, setImageLoaded] = useState(false);
+  const [imageError, setImageError] = useState(false);
   
-  // Preload the logo image to prevent glitches
+  // Preload the logo image with iOS-specific handling
   useEffect(() => {
     const img = new Image();
-    img.onload = () => setImageLoaded(true);
+    img.crossOrigin = "anonymous"; // Handle CORS issues
+    img.onload = () => {
+      console.log("Logo image loaded successfully");
+      setImageLoaded(true);
+      setImageError(false);
+    };
+    img.onerror = (error) => {
+      console.error("Logo image failed to load:", error);
+      setImageError(true);
+      // Still proceed even if image fails
+      setImageLoaded(true);
+    };
     img.src = LOGO_URL;
-  }, []);
+    
+    // Timeout fallback for slow connections
+    const timeout = setTimeout(() => {
+      if (!imageLoaded) {
+        console.log("Image loading timeout, proceeding anyway");
+        setImageLoaded(true);
+      }
+    }, 5000);
+    
+    return () => clearTimeout(timeout);
+  }, [imageLoaded]);
   
   useEffect(() => {
     if (phase === "logo" && imageLoaded) {
@@ -71,28 +93,70 @@ export function LogoIntro({ onComplete }: LogoIntroProps) {
             }}
             className="flex flex-col items-center justify-center space-y-6"
           >
-            <motion.img 
-              src={LOGO_URL}
-              alt="Campus Connect" 
-              className="max-w-sm w-full h-auto logo-image"
-              initial={{ opacity: 0, scale: 0.9, y: 20 }}
-              animate={{ 
-                opacity: imageLoaded ? 1 : 0, 
-                scale: imageLoaded ? 1 : 0.9, 
-                y: imageLoaded ? 0 : 20 
-              }}
-              exit={{ opacity: 0, scale: 1.1, y: -20 }}
-              transition={{ 
-                duration: 1.0,
-                ease: [0.16, 1, 0.3, 1],
-                delay: imageLoaded ? 0.2 : 0
-              }}
-              style={{
-                willChange: 'transform, opacity',
-                backfaceVisibility: 'hidden',
-                perspective: 1000
-              }}
-            />
+            {!imageError ? (
+              <motion.img 
+                src={LOGO_URL}
+                alt="Campus Connect" 
+                className="max-w-sm w-full h-auto logo-image"
+                initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                animate={{ 
+                  opacity: imageLoaded ? 1 : 0, 
+                  scale: imageLoaded ? 1 : 0.9, 
+                  y: imageLoaded ? 0 : 20 
+                }}
+                exit={{ opacity: 0, scale: 1.1, y: -20 }}
+                transition={{ 
+                  duration: 1.0,
+                  ease: [0.16, 1, 0.3, 1],
+                  delay: imageLoaded ? 0.2 : 0
+                }}
+                style={{
+                  willChange: 'transform, opacity',
+                  backfaceVisibility: 'hidden',
+                  perspective: 1000,
+                  // iOS-specific fixes
+                  WebkitBackfaceVisibility: 'hidden',
+                  WebkitTransform: 'translate3d(0,0,0)',
+                  transform: 'translate3d(0,0,0)',
+                  // Prevent white square on iOS dark mode
+                  backgroundColor: 'transparent',
+                  mixBlendMode: 'normal',
+                  isolation: 'isolate'
+                }}
+                onLoad={() => {
+                  console.log("Image element onLoad triggered");
+                  setImageLoaded(true);
+                  setImageError(false);
+                }}
+                onError={(e) => {
+                  console.error("Image element onError:", e);
+                  setImageError(true);
+                  setImageLoaded(true);
+                }}
+              />
+            ) : (
+              // Fallback when image fails to load
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                animate={{ 
+                  opacity: imageLoaded ? 1 : 0, 
+                  scale: imageLoaded ? 1 : 0.9, 
+                  y: imageLoaded ? 0 : 20 
+                }}
+                exit={{ opacity: 0, scale: 1.1, y: -20 }}
+                transition={{ 
+                  duration: 1.0,
+                  ease: [0.16, 1, 0.3, 1],
+                  delay: imageLoaded ? 0.2 : 0
+                }}
+                className="flex flex-col items-center space-y-4"
+              >
+                <div className="text-8xl">🎓</div>
+                <div className="text-3xl font-bold text-slate-900 tracking-wide">
+                  CAMPUS CONNECT
+                </div>
+              </motion.div>
+            )}
             {imageLoaded && (
               <motion.p 
                 className="text-slate-600 text-sm tracking-wide font-light"
