@@ -13,8 +13,8 @@ interface UniversityFormProps {
 interface University {
   name: string;
   country: string;
-  "state-province": string | null;
-  domains: string[];
+  domain: string;
+  web_page: string;
 }
 
 export function UniversityForm({ onNext, onBack, onUpdateData, firstName, initialValue = "" }: UniversityFormProps) {
@@ -23,6 +23,26 @@ export function UniversityForm({ onNext, onBack, onUpdateData, firstName, initia
   const [isLoading, setIsLoading] = useState(false);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [selectedSuggestionIndex, setSelectedSuggestionIndex] = useState(-1);
+  const [apiStatus, setApiStatus] = useState<string>(''); // For debugging
+
+  // Test API function for debugging
+  const testAPI = async () => {
+    try {
+      console.log('Testing API...');
+      const response = await fetch('http://universities.hipolabs.com/search?name=harvard');
+      const data = await response.json();
+      console.log('API Test Result:', data);
+      setApiStatus(`API Working: Found ${data.length} results for Harvard`);
+    } catch (error) {
+      console.error('API Test Failed:', error);
+      setApiStatus(`API Failed: ${error}`);
+    }
+  };
+
+  // Test API on component mount
+  useEffect(() => {
+    testAPI();
+  }, []);
 
   // Search universities as user types
   useEffect(() => {
@@ -30,8 +50,10 @@ export function UniversityForm({ onNext, onBack, onUpdateData, firstName, initia
       if (university.length > 2) {
         setIsLoading(true);
         try {
+          console.log('Searching for:', university);
+          // Simple API call - exactly as documented
           const response = await fetch(
-            `https://universities.hipolabs.com/search?name=${encodeURIComponent(university)}`
+            `http://universities.hipolabs.com/search?name=${encodeURIComponent(university)}`
           );
           
           if (!response.ok) {
@@ -39,16 +61,28 @@ export function UniversityForm({ onNext, onBack, onUpdateData, firstName, initia
           }
           
           const results = await response.json();
-          setSuggestions(results.slice(0, 8)); // Show top 8 results
+          console.log('API Response:', results);
+          
+          // Take first 8 results directly
+          setSuggestions(results.slice(0, 8));
           setShowSuggestions(true);
           setSelectedSuggestionIndex(-1);
         } catch (error) {
-          console.log('University search failed:', error);
-          // Provide some common fallback suggestions
+          console.error('University search failed:', error);
+          // Simple fallback suggestions
           const fallbackSuggestions = [
-            { name: university + ' University', country: 'Unknown', 'state-province': null, domains: [] },
-            { name: university + ' College', country: 'Unknown', 'state-province': null, domains: [] },
-            { name: 'University of ' + university, country: 'Unknown', 'state-province': null, domains: [] }
+            { 
+              name: `${university} University`, 
+              country: 'United States', 
+              domain: `${university.toLowerCase().replace(/\s+/g, '')}.edu`,
+              web_page: `https://${university.toLowerCase().replace(/\s+/g, '')}.edu`
+            },
+            { 
+              name: `University of ${university}`, 
+              country: 'United States', 
+              domain: `u${university.toLowerCase().replace(/\s+/g, '')}.edu`,
+              web_page: `https://u${university.toLowerCase().replace(/\s+/g, '')}.edu`
+            }
           ];
           setSuggestions(fallbackSuggestions);
           setShowSuggestions(true);
@@ -176,6 +210,7 @@ export function UniversityForm({ onNext, onBack, onUpdateData, firstName, initia
                 onChange={(e) => {
                   setUniversity(e.target.value);
                   setSelectedSuggestionIndex(-1);
+                  console.log('Input changed to:', e.target.value);
                 }}
                 onKeyDown={handleKeyDown}
                 onFocus={() => {
@@ -239,7 +274,9 @@ export function UniversityForm({ onNext, onBack, onUpdateData, firstName, initia
                       <div className="font-medium text-slate-900 leading-tight">{suggestion.name}</div>
                       <div className="text-sm text-slate-500 mt-1">
                         {suggestion.country}
-                        {suggestion["state-province"] && `, ${suggestion["state-province"]}`}
+                        {suggestion.domain && (
+                          <span className="text-xs text-slate-400 ml-2">• {suggestion.domain}</span>
+                        )}
                       </div>
                     </motion.button>
                   ))}
@@ -302,6 +339,12 @@ export function UniversityForm({ onNext, onBack, onUpdateData, firstName, initia
             <p className="text-sm text-slate-500">
               Step 2 of 7 • This helps us connect you with peers at your institution
             </p>
+            {/* Debug info */}
+            {apiStatus && (
+              <p className="text-xs text-blue-600 mt-2">
+                Debug: {apiStatus}
+              </p>
+            )}
           </motion.div>
         </motion.form>
 

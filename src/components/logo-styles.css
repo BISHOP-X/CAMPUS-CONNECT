@@ -1,64 +1,7 @@
-/* iOS Dark Mode Fix - Handle system dark mode */
+/* Simple, reliable logo styles - no iOS complications */
 .logo-image {
-  /* Transparent images work great, but we can add subtle effects */
-  transition: filter 0.3s ease;
-  /* Force transparent background for any cached white bg images */
-  background: transparent !important;
-  /* Remove any white backgrounds that might be embedded */
-  mix-blend-mode: multiply;
-}
-
-/* iOS/iPhone specific dark mode detection */
-@media (prefers-color-scheme: dark) {
-  .logo-image {
-    /* For white background images on dark backgrounds - make them blend better */
-    filter: invert(0) brightness(0.9) contrast(1.1);
-    background: transparent !important;
-    /* Use screen blend mode to handle white squares on dark backgrounds */
-    mix-blend-mode: normal;
-    /* Add a subtle glow effect instead */
-    box-shadow: 0 0 20px rgba(37, 99, 235, 0.2);
-  }
-  
-  /* If image still appears as white square, hide the white background */
-  .logo-image[src*="CAMPUSCONNECT"] {
-    background-color: transparent !important;
-    border-radius: 8px;
-    /* Ensure no white bleeding */
-    outline: none;
-    border: none;
-  }
-}
-
-/* Light mode - clean look */
-@media (prefers-color-scheme: light) {
-  .logo-image {
-    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
-    /* Light mode uses multiply to remove white backgrounds */
-    mix-blend-mode: multiply;
-    background: transparent !important;
-  }
-}
-
-/* Mobile-specific fixes for cached images and iOS issues */
-@supports (-webkit-appearance: none) {
-  .logo-image {
-    /* Safari/iOS specific background removal */
-    background-color: transparent !important;
-    background-image: none !important;
-    /* Prevent iOS from adding its own styling */
-    -webkit-appearance: none;
-  }
-  
-  /* iOS Dark Mode specific handling */
-  @media (prefers-color-scheme: dark) {
-    .logo-image {
-      /* More aggressive iOS dark mode fixes */
-      filter: brightness(1) contrast(1) saturate(1.1);
-      mix-blend-mode: normal;
-      /* Ensure transparent background on iOS dark mode */
-      background: rgba(0, 0, 0, 0) !important;
-      box-shadow: 0 0 15px rgba(37, 99, 235, 0.3);
-    }
-  }
+  background: transparent;
+  mix-blend-mode: normal;
+  /* Simple hardware acceleration */
+  transform: translateZ(0);
 }
