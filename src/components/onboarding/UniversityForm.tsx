@@ -29,7 +29,7 @@ export function UniversityForm({ onNext, onBack, onUpdateData, firstName, initia
   const testAPI = async () => {
     try {
       console.log('Testing API...');
-      const response = await fetch('http://universities.hipolabs.com/search?name=harvard');
+      const response = await fetch('https://universities.hipolabs.com/search?name=harvard');
       const data = await response.json();
       console.log('API Test Result:', data);
       setApiStatus(`API Working: Found ${data.length} results for Harvard`);
@@ -53,7 +53,7 @@ export function UniversityForm({ onNext, onBack, onUpdateData, firstName, initia
           console.log('Searching for:', university);
           // Simple API call - exactly as documented
           const response = await fetch(
-            `http://universities.hipolabs.com/search?name=${encodeURIComponent(university)}`
+            `https://universities.hipolabs.com/search?name=${encodeURIComponent(university)}`
           );
           
           if (!response.ok) {
