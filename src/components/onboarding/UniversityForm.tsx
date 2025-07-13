@@ -13,159 +13,66 @@ interface UniversityFormProps {
 interface University {
   name: string;
   country: string;
-  domain: string;
-  web_page: string;
+  alpha_two_code: string;
+  "state-province": string;
+  domains: string[];
+  web_pages: string[];
 }
 
 export function UniversityForm({ onNext, onBack, onUpdateData, firstName, initialValue = "" }: UniversityFormProps) {
   const [university, setUniversity] = useState(initialValue);
   const [suggestions, setSuggestions] = useState<University[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
+  const [allUniversities, setAllUniversities] = useState<University[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [selectedSuggestionIndex, setSelectedSuggestionIndex] = useState(-1);
-  const [apiStatus, setApiStatus] = useState<string>(''); // For debugging
-  const [apiAvailable, setApiAvailable] = useState<boolean>(true); // Track if API is working
+  const [loading, setLoading] = useState(true);
+  const [searching, setSearching] = useState(false);
 
-  // Test API function for debugging
-  const testAPI = async () => {
-    try {
-      console.log('Testing API...');
-      const response = await fetch('https://universities.hipolabs.com/search?name=harvard', {
-        method: 'GET',
-        headers: {
-          'Accept': 'application/json',
-        },
-        mode: 'cors'
-      });
-      
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      
-      const data = await response.json();
-      console.log('API Test Result:', data);
-      setApiStatus(`API Working: Found ${data.length} results for Harvard`);
-      setApiAvailable(true);
-    } catch (error) {
-      console.error('API Test Failed:', error);
-      setApiStatus(`API Failed: ${error.message} - Using smart fallback suggestions`);
-      setApiAvailable(false);
-    }
-  };
-
-  // Test API on component mount
+  // Load university database on component mount
   useEffect(() => {
-    testAPI();
+    loadUniversities();
   }, []);
 
-  // Search universities as user types
-  useEffect(() => {
-    const searchUniversities = async () => {
-      if (university.length > 2) {
-        setIsLoading(true);
-        
-        // If API is not available, immediately show smart fallback suggestions
-        if (!apiAvailable) {
-          const smartSuggestions = generateSmartSuggestions(university);
-          setSuggestions(smartSuggestions);
-          setShowSuggestions(true);
-          setSelectedSuggestionIndex(-1);
-          setIsLoading(false);
-          return;
-        }
-        
-        try {
-          console.log('Searching for:', university);
-          // Try the universities API with proper CORS handling
-          const response = await fetch(
-            `https://universities.hipolabs.com/search?name=${encodeURIComponent(university)}`,
-            {
-              method: 'GET',
-              headers: {
-                'Accept': 'application/json',
-              },
-              mode: 'cors'
-            }
-          );
-          
-          if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-          }
-          
-          const results = await response.json();
-          console.log('API Response:', results);
-          
-          // Take first 8 results directly
-          setSuggestions(results.slice(0, 8));
-          setShowSuggestions(true);
-          setSelectedSuggestionIndex(-1);
-        } catch (error) {
-          console.error('University search failed:', error);
-          setApiAvailable(false); // Mark API as unavailable
-          
-          // Enhanced fallback with smart suggestions
-          const smartSuggestions = generateSmartSuggestions(university);
-          setSuggestions(smartSuggestions);
-          setShowSuggestions(true);
-          setSelectedSuggestionIndex(-1);
-        }
-        setIsLoading(false);
-      } else {
-        setSuggestions([]);
-        setShowSuggestions(false);
-        setSelectedSuggestionIndex(-1);
-      }
-    };
-
-    const timeoutId = setTimeout(searchUniversities, 300); // Debounce search
-    return () => clearTimeout(timeoutId);
-  }, [university, apiAvailable]);
-
-  // Generate smart university suggestions based on input
-  const generateSmartSuggestions = (input: string): University[] => {
-    const suggestions = [];
-    const cleanInput = input.trim();
-    
-    // Popular university patterns
-    const patterns = [
-      { name: `${cleanInput} University`, suffix: 'edu' },
-      { name: `University of ${cleanInput}`, suffix: 'edu' },
-      { name: `${cleanInput} State University`, suffix: 'edu' },
-      { name: `${cleanInput} College`, suffix: 'edu' },
-      { name: `${cleanInput} Institute of Technology`, suffix: 'edu' },
-      { name: `${cleanInput} Community College`, suffix: 'edu' }
-    ];
-    
-    patterns.forEach(pattern => {
-      const domain = `${pattern.name.toLowerCase().replace(/[^a-z0-9]/g, '')}.${pattern.suffix}`;
-      suggestions.push({
-        name: pattern.name,
-        country: 'United States',
-        domain: domain,
-        web_page: `https://${domain}`
-      });
-    });
-    
-    // Add some international variations
-    if (cleanInput.length > 3) {
-      suggestions.push(
-        {
-          name: `${cleanInput} University`,
-          country: 'United Kingdom',
-          domain: `${cleanInput.toLowerCase().replace(/[^a-z0-9]/g, '')}.ac.uk`,
-          web_page: `https://${cleanInput.toLowerCase().replace(/[^a-z0-9]/g, '')}.ac.uk`
-        },
-        {
-          name: `University of ${cleanInput}`,
-          country: 'Canada',
-          domain: `u${cleanInput.toLowerCase().replace(/[^a-z0-9]/g, '')}.ca`,
-          web_page: `https://u${cleanInput.toLowerCase().replace(/[^a-z0-9]/g, '')}.ca`
-        }
-      );
+  const loadUniversities = async () => {
+    try {
+      const response = await fetch('/universities.json');
+      const data = await response.json();
+      setAllUniversities(data);
+      setLoading(false);
+      console.log('Loaded', data.length, 'universities from database');
+    } catch (err) {
+      console.error('Failed to load universities:', err);
+      setLoading(false);
     }
-    
-    return suggestions.slice(0, 6); // Return top 6 suggestions
   };
+
+  // Search universities as user types with live filtering
+  useEffect(() => {
+    if (university.length > 1 && allUniversities.length > 0) {
+      setSearching(true);
+      
+      // Add slight delay for better UX
+      const searchTimeout = setTimeout(() => {
+        const filtered = allUniversities.filter(uni => 
+          uni.name.toLowerCase().includes(university.toLowerCase())
+        );
+        setSuggestions(filtered.slice(0, 8)); // Show top 8 matches
+        setShowSuggestions(true);
+        setSelectedSuggestionIndex(-1);
+        setSearching(false);
+      }, 150); // 150ms delay for smoother typing experience
+
+      return () => {
+        clearTimeout(searchTimeout);
+        setSearching(false);
+      };
+    } else {
+      setSuggestions([]);
+      setShowSuggestions(false);
+      setSelectedSuggestionIndex(-1);
+      setSearching(false);
+    }
+  }, [university, allUniversities]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -277,11 +184,10 @@ export function UniversityForm({ onNext, onBack, onUpdateData, firstName, initia
                 onChange={(e) => {
                   setUniversity(e.target.value);
                   setSelectedSuggestionIndex(-1);
-                  console.log('Input changed to:', e.target.value);
                 }}
                 onKeyDown={handleKeyDown}
                 onFocus={() => {
-                  if (university.length > 2 && suggestions.length > 0) {
+                  if (university.length > 1 && suggestions.length > 0) {
                     setShowSuggestions(true);
                   }
                 }}
@@ -292,26 +198,43 @@ export function UniversityForm({ onNext, onBack, onUpdateData, firstName, initia
                     setSelectedSuggestionIndex(-1);
                   }, 300);
                 }}
-                placeholder="Start typing your university name..."
-                className="w-full px-4 py-4 text-lg border-2 border-slate-200 rounded-xl
+                placeholder={loading ? "Loading universities..." : "Start typing your university name..."}
+                disabled={loading}
+                className={`w-full px-4 py-4 pr-12 text-lg border-2 border-slate-200 rounded-xl
                          focus:border-[#2563eb] focus:ring-0 focus:outline-none
                          transition-all duration-200 placeholder:text-slate-400
-                         bg-white/80 backdrop-blur-sm"
+                         bg-white/80 backdrop-blur-sm ${loading ? 'cursor-not-allowed opacity-50' : ''}`}
                 autoComplete="organization"
                 whileFocus={{ scale: 1.02 }}
                 transition={{ type: "spring", stiffness: 300, damping: 30 }}
               />
               
-              {/* Loading indicator */}
-              {isLoading && (
-                <div className="absolute right-4 top-1/2 transform -translate-y-1/2">
-                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-[#2563eb]"></div>
-                </div>
-              )}
+              {/* Search/Loading Icon */}
+              <div className="absolute right-4 top-1/2 transform -translate-y-1/2">
+                {searching ? (
+                  <motion.div
+                    animate={{ rotate: 360 }}
+                    transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                    className="w-5 h-5"
+                  >
+                    <svg className="w-5 h-5 text-[#2563eb]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                    </svg>
+                  </motion.div>
+                ) : university.length > 0 ? (
+                  <svg className="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                  </svg>
+                ) : (
+                  <svg className="w-5 h-5 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                  </svg>
+                )}
+              </div>
             </div>
 
             {/* Search Suggestions Dropdown */}
-            {showSuggestions && suggestions.length > 0 && (
+            {(showSuggestions && suggestions.length > 0) || searching ? (
               <motion.div
                 initial={{ opacity: 0, y: -10, scale: 0.95 }}
                 animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -321,35 +244,50 @@ export function UniversityForm({ onNext, onBack, onUpdateData, firstName, initia
                 style={{ boxShadow: '0 10px 25px rgba(0, 0, 0, 0.1)' }}
               >
                 <div className="py-2">
-                  {suggestions.map((suggestion, index) => (
-                    <motion.button
-                      key={`${suggestion.name}-${index}`}
-                      type="button"
-                      onClick={() => handleSuggestionClick(suggestion)}
-                      onMouseDown={(e) => e.preventDefault()} // Prevent input blur
-                      onMouseEnter={() => setSelectedSuggestionIndex(index)}
-                      className={`w-full px-4 py-3 text-left transition-colors duration-150 border-b border-slate-100 last:border-b-0
-                               focus:outline-none active:bg-blue-100 ${
-                                 index === selectedSuggestionIndex
-                                   ? 'bg-blue-50 text-[#2563eb]'
-                                   : 'hover:bg-blue-50 hover:text-[#2563eb]'
-                               }`}
-                      whileHover={{ x: 4 }}
-                      whileTap={{ scale: 0.98 }}
-                      transition={{ type: "spring", stiffness: 400, damping: 30 }}
-                    >
-                      <div className="font-medium text-slate-900 leading-tight">{suggestion.name}</div>
-                      <div className="text-sm text-slate-500 mt-1">
-                        {suggestion.country}
-                        {suggestion.domain && (
-                          <span className="text-xs text-slate-400 ml-2">• {suggestion.domain}</span>
-                        )}
-                      </div>
-                    </motion.button>
-                  ))}
+                  {searching ? (
+                    <div className="flex items-center justify-center py-8">
+                      <motion.div
+                        animate={{ rotate: 360 }}
+                        transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                        className="w-6 h-6 mr-3"
+                      >
+                        <svg className="w-6 h-6 text-[#2563eb]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                        </svg>
+                      </motion.div>
+                      <span className="text-slate-500">Searching universities...</span>
+                    </div>
+                  ) : suggestions.length > 0 ? (
+                    suggestions.map((suggestion, index) => (
+                      <motion.button
+                        key={`${suggestion.name}-${index}`}
+                        type="button"
+                        onClick={() => handleSuggestionClick(suggestion)}
+                        onMouseDown={(e) => e.preventDefault()} // Prevent input blur
+                        onMouseEnter={() => setSelectedSuggestionIndex(index)}
+                        className={`w-full px-4 py-3 text-left transition-colors duration-150 border-b border-slate-100 last:border-b-0
+                                 focus:outline-none active:bg-blue-100 ${
+                                   index === selectedSuggestionIndex
+                                     ? 'bg-blue-50 text-[#2563eb]'
+                                     : 'hover:bg-blue-50 hover:text-[#2563eb]'
+                                 }`}
+                        whileHover={{ x: 4 }}
+                        whileTap={{ scale: 0.98 }}
+                        transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                      >
+                        <div className="font-medium text-slate-900 leading-tight">{suggestion.name}</div>
+                        <div className="text-sm text-slate-500 mt-1">
+                          {suggestion.country}
+                          {suggestion.domains && suggestion.domains.length > 0 && (
+                            <span className="text-xs text-slate-400 ml-2">• {suggestion.domains[0]}</span>
+                          )}
+                        </div>
+                      </motion.button>
+                    ))
+                  ) : null}
                 </div>
               </motion.div>
-            )}
+            ) : null}
           </div>
 
           {/* Continue Button */}
@@ -406,12 +344,6 @@ export function UniversityForm({ onNext, onBack, onUpdateData, firstName, initia
             <p className="text-sm text-slate-500">
               Step 2 of 7 • This helps us connect you with peers at your institution
             </p>
-            {/* Debug info */}
-            {apiStatus && (
-              <p className="text-xs text-blue-600 mt-2">
-                Debug: {apiStatus}
-              </p>
-            )}
           </motion.div>
         </motion.form>
 

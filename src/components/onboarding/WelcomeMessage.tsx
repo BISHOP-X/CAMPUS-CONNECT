@@ -122,8 +122,12 @@ export function WelcomeMessage({ onComplete, firstName }: WelcomeMessageProps) {
           <div className="space-y-6">
             {/* Developer Avatar */}
             <div className="flex items-center space-x-4">
-              <div className="w-16 h-16 bg-gradient-to-br from-[#2563eb] to-[#1d4ed8] rounded-full flex items-center justify-center">
-                <span className="text-2xl font-bold text-white">W</span>
+              <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-[#2563eb] shadow-lg">
+                <img 
+                  src="/WISDOM.jpeg" 
+                  alt="Wisdom - Founder & Developer"
+                  className="w-full h-full object-cover"
+                />
               </div>
               <div>
                 <h3 className="text-lg font-semibold text-slate-900">A Note from Wisdom</h3>
@@ -167,7 +171,11 @@ export function WelcomeMessage({ onComplete, firstName }: WelcomeMessageProps) {
         >
           {/* Primary Action */}
           <motion.button
-            onClick={onComplete}
+            onClick={() => {
+              onComplete();
+              // Navigate to the Discover page to start exploring students
+              window.location.href = '/discover';
+            }}
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
             className="w-full py-4 px-8 bg-gradient-to-r from-[#2563eb] to-[#1d4ed8] text-white rounded-xl text-lg font-medium

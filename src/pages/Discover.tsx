@@ -7,8 +7,8 @@ import { Search, Filter } from "lucide-react";
 
 const Discover = () => {
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedUniversity, setSelectedUniversity] = useState("");
-  const [selectedDepartment, setSelectedDepartment] = useState("");
+  const [selectedUniversity, setSelectedUniversity] = useState("all");
+  const [selectedDepartment, setSelectedDepartment] = useState("all");
 
   // Mock data for students
   const allStudents = [
@@ -122,8 +122,8 @@ const Discover = () => {
     const matchesSearch = student.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          student.university.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          student.department.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesUniversity = !selectedUniversity || student.university === selectedUniversity;
-    const matchesDepartment = !selectedDepartment || student.department === selectedDepartment;
+    const matchesUniversity = !selectedUniversity || selectedUniversity === "all" || student.university === selectedUniversity;
+    const matchesDepartment = !selectedDepartment || selectedDepartment === "all" || student.department === selectedDepartment;
     
     return matchesSearch && matchesUniversity && matchesDepartment;
   });
@@ -134,8 +134,8 @@ const Discover = () => {
 
   const clearFilters = () => {
     setSearchTerm("");
-    setSelectedUniversity("");
-    setSelectedDepartment("");
+    setSelectedUniversity("all");
+    setSelectedDepartment("all");
   };
 
   return (
@@ -173,7 +173,7 @@ const Discover = () => {
                 <SelectValue placeholder="All Universities" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">All Universities</SelectItem>
+                <SelectItem value="all">All Universities</SelectItem>
                 {universities.map((university) => (
                   <SelectItem key={university} value={university}>
                     {university}
@@ -188,7 +188,7 @@ const Discover = () => {
                 <SelectValue placeholder="All Departments" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">All Departments</SelectItem>
+                <SelectItem value="all">All Departments</SelectItem>
                 {departments.map((department) => (
                   <SelectItem key={department} value={department}>
                     {department}
