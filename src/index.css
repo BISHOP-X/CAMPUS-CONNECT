@@ -2,91 +2,22 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Prevent auto-keyboard popup on iOS and improve mobile UX */
+/* Basic mobile input improvements */
 input[type="text"],
 input[type="email"],
 input[type="password"],
 textarea {
-  /* Prevent auto-zoom on iOS when focusing inputs */
   font-size: 16px;
-  /* Disable auto-capitalization and auto-correction for better UX */
-  -webkit-autocapitalize: none;
-  -webkit-autocorrect: off;
-  autocapitalize: none;
-  autocorrect: off;
-  /* Prevent iOS from automatically focusing */
-  -webkit-user-select: text;
-  user-select: text;
 }
 
-/* Better mobile input styling */
+/* Better mobile input sizing */
 @media (max-width: 768px) {
   input[type="text"],
   input[type="email"], 
   input[type="password"],
   textarea {
-    /* Ensure minimum font size to prevent zoom */
     font-size: 16px !important;
-    /* Better tap targets */
     min-height: 44px;
-  }
-}
-
-/* iOS Dark Mode Fixes - Prevent white square images */
-.logo-image {
-  /* Safari/WebKit compatibility */
-  -webkit-appearance: none;
-  appearance: none;
-  -webkit-background-clip: padding-box;
-  background-clip: padding-box;
-  /* Force image rendering without background pollution */
-  image-rendering: -webkit-optimize-contrast;
-  image-rendering: crisp-edges;
-  /* Prevent iOS from adding white backgrounds */
-  -webkit-user-select: none;
-  user-select: none;
-  -webkit-touch-callout: none;
-}
-
-/* Force transparent backgrounds for all images in dark mode */
-@media (prefers-color-scheme: dark) {
-  /* Root color scheme declaration for iOS */
-  :root {
-    color-scheme: light dark;
-  }
-  
-  /* Comprehensive iOS dark mode image fixes */
-  .logo-image,
-  .logo-image.ios-dark-mode,
-  img[src*="CAMPUSCONNECT"],
-  img[class*="logo"] {
-    /* Remove all possible background sources */
-    background: none !important;
-    background-color: transparent !important;
-    background-image: none !important;
-    /* iOS-specific transparency enforcement */
-    -webkit-background-composite: source-over !important;
-    /* Prevent Safari from rendering white squares */
-    box-shadow: none !important;
-    border: none !important;
-    /* Image rendering optimizations for iOS */
-    image-rendering: -webkit-optimize-contrast !important;
-    /* Force proper alpha channel handling */
-    -webkit-user-select: none !important;
-    user-select: none !important;
-    /* Prevent any iOS compositing issues */
-    isolation: isolate !important;
-    contain: paint !important;
-  }
-  
-  /* Additional iOS Safari specific fixes */
-  @supports (-webkit-touch-callout: none) {
-    .logo-image {
-      /* iOS Safari specific transparency fix */
-      -webkit-mask-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg"><defs><mask id="mask"><rect width="100%" height="100%" fill="white"/></mask></defs></svg>') !important;
-      -webkit-mask-size: 100% 100% !important;
-      -webkit-mask-repeat: no-repeat !important;
-    }
   }
 }
 

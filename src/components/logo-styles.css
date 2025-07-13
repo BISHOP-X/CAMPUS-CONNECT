@@ -1,7 +1,6 @@
-/* Simple, reliable logo styles - no iOS complications */
+/* Basic logo styles - no complications */
 .logo-image {
-  background: transparent;
-  mix-blend-mode: normal;
-  /* Simple hardware acceleration */
-  transform: translateZ(0);
+  display: block;
+  max-width: 100%;
+  height: auto;
 }

@@ -24,18 +24,32 @@ export function UniversityForm({ onNext, onBack, onUpdateData, firstName, initia
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [selectedSuggestionIndex, setSelectedSuggestionIndex] = useState(-1);
   const [apiStatus, setApiStatus] = useState<string>(''); // For debugging
+  const [apiAvailable, setApiAvailable] = useState<boolean>(true); // Track if API is working
 
   // Test API function for debugging
   const testAPI = async () => {
     try {
       console.log('Testing API...');
-      const response = await fetch('https://universities.hipolabs.com/search?name=harvard');
+      const response = await fetch('https://universities.hipolabs.com/search?name=harvard', {
+        method: 'GET',
+        headers: {
+          'Accept': 'application/json',
+        },
+        mode: 'cors'
+      });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
       const data = await response.json();
       console.log('API Test Result:', data);
       setApiStatus(`API Working: Found ${data.length} results for Harvard`);
+      setApiAvailable(true);
     } catch (error) {
       console.error('API Test Failed:', error);
-      setApiStatus(`API Failed: ${error}`);
+      setApiStatus(`API Failed: ${error.message} - Using smart fallback suggestions`);
+      setApiAvailable(false);
     }
   };
 
@@ -49,11 +63,29 @@ export function UniversityForm({ onNext, onBack, onUpdateData, firstName, initia
     const searchUniversities = async () => {
       if (university.length > 2) {
         setIsLoading(true);
+        
+        // If API is not available, immediately show smart fallback suggestions
+        if (!apiAvailable) {
+          const smartSuggestions = generateSmartSuggestions(university);
+          setSuggestions(smartSuggestions);
+          setShowSuggestions(true);
+          setSelectedSuggestionIndex(-1);
+          setIsLoading(false);
+          return;
+        }
+        
         try {
           console.log('Searching for:', university);
-          // Simple API call - exactly as documented
+          // Try the universities API with proper CORS handling
           const response = await fetch(
-            `https://universities.hipolabs.com/search?name=${encodeURIComponent(university)}`
+            `https://universities.hipolabs.com/search?name=${encodeURIComponent(university)}`,
+            {
+              method: 'GET',
+              headers: {
+                'Accept': 'application/json',
+              },
+              mode: 'cors'
+            }
           );
           
           if (!response.ok) {
@@ -69,22 +101,11 @@ export function UniversityForm({ onNext, onBack, onUpdateData, firstName, initia
           setSelectedSuggestionIndex(-1);
         } catch (error) {
           console.error('University search failed:', error);
-          // Simple fallback suggestions
-          const fallbackSuggestions = [
-            { 
-              name: `${university} University`, 
-              country: 'United States', 
-              domain: `${university.toLowerCase().replace(/\s+/g, '')}.edu`,
-              web_page: `https://${university.toLowerCase().replace(/\s+/g, '')}.edu`
-            },
-            { 
-              name: `University of ${university}`, 
-              country: 'United States', 
-              domain: `u${university.toLowerCase().replace(/\s+/g, '')}.edu`,
-              web_page: `https://u${university.toLowerCase().replace(/\s+/g, '')}.edu`
-            }
-          ];
-          setSuggestions(fallbackSuggestions);
+          setApiAvailable(false); // Mark API as unavailable
+          
+          // Enhanced fallback with smart suggestions
+          const smartSuggestions = generateSmartSuggestions(university);
+          setSuggestions(smartSuggestions);
           setShowSuggestions(true);
           setSelectedSuggestionIndex(-1);
         }
@@ -98,7 +119,53 @@ export function UniversityForm({ onNext, onBack, onUpdateData, firstName, initia
 
     const timeoutId = setTimeout(searchUniversities, 300); // Debounce search
     return () => clearTimeout(timeoutId);
-  }, [university]);
+  }, [university, apiAvailable]);
+
+  // Generate smart university suggestions based on input
+  const generateSmartSuggestions = (input: string): University[] => {
+    const suggestions = [];
+    const cleanInput = input.trim();
+    
+    // Popular university patterns
+    const patterns = [
+      { name: `${cleanInput} University`, suffix: 'edu' },
+      { name: `University of ${cleanInput}`, suffix: 'edu' },
+      { name: `${cleanInput} State University`, suffix: 'edu' },
+      { name: `${cleanInput} College`, suffix: 'edu' },
+      { name: `${cleanInput} Institute of Technology`, suffix: 'edu' },
+      { name: `${cleanInput} Community College`, suffix: 'edu' }
+    ];
+    
+    patterns.forEach(pattern => {
+      const domain = `${pattern.name.toLowerCase().replace(/[^a-z0-9]/g, '')}.${pattern.suffix}`;
+      suggestions.push({
+        name: pattern.name,
+        country: 'United States',
+        domain: domain,
+        web_page: `https://${domain}`
+      });
+    });
+    
+    // Add some international variations
+    if (cleanInput.length > 3) {
+      suggestions.push(
+        {
+          name: `${cleanInput} University`,
+          country: 'United Kingdom',
+          domain: `${cleanInput.toLowerCase().replace(/[^a-z0-9]/g, '')}.ac.uk`,
+          web_page: `https://${cleanInput.toLowerCase().replace(/[^a-z0-9]/g, '')}.ac.uk`
+        },
+        {
+          name: `University of ${cleanInput}`,
+          country: 'Canada',
+          domain: `u${cleanInput.toLowerCase().replace(/[^a-z0-9]/g, '')}.ca`,
+          web_page: `https://u${cleanInput.toLowerCase().replace(/[^a-z0-9]/g, '')}.ca`
+        }
+      );
+    }
+    
+    return suggestions.slice(0, 6); // Return top 6 suggestions
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
