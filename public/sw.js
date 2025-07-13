@@ -1,5 +1,5 @@
 // Campus Connect Service Worker - Force refresh for new images
-const CACHE_NAME = 'campus-connect-v2'; // Updated version to force refresh
+const CACHE_NAME = 'campus-connect-v3'; // Updated for new deployment and simplified logo
 const urlsToCache = [
   '/',
   '/static/js/bundle.js',
