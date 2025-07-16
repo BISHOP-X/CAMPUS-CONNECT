@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { OnboardingContainer } from "./OnboardingContainer";
+import { universityService, University as UniversityType } from "../../services/universityService";
+import { usePreloadingStatus } from "../../hooks/useAppPreloader";
 
 interface UniversityFormProps {
   onNext: () => void;
@@ -22,45 +24,31 @@ interface University {
 export function UniversityForm({ onNext, onBack, onUpdateData, firstName, initialValue = "" }: UniversityFormProps) {
   const [university, setUniversity] = useState(initialValue);
   const [suggestions, setSuggestions] = useState<University[]>([]);
-  const [allUniversities, setAllUniversities] = useState<University[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [selectedSuggestionIndex, setSelectedSuggestionIndex] = useState(-1);
-  const [loading, setLoading] = useState(true);
   const [searching, setSearching] = useState(false);
+  
+  // Get preloading status for better UX
+  const { isLoading: isPreloading, isReady } = usePreloadingStatus();
 
-  // Load university database on component mount
+  // Search universities using the service
   useEffect(() => {
-    loadUniversities();
-  }, []);
-
-  const loadUniversities = async () => {
-    try {
-      const response = await fetch('/universities.json');
-      const data = await response.json();
-      setAllUniversities(data);
-      setLoading(false);
-      console.log('Loaded', data.length, 'universities from database');
-    } catch (err) {
-      console.error('Failed to load universities:', err);
-      setLoading(false);
-    }
-  };
-
-  // Search universities as user types with live filtering
-  useEffect(() => {
-    if (university.length > 1 && allUniversities.length > 0) {
+    if (university.length > 2) {
       setSearching(true);
       
-      // Add slight delay for better UX
-      const searchTimeout = setTimeout(() => {
-        const filtered = allUniversities.filter(uni => 
-          uni.name.toLowerCase().includes(university.toLowerCase())
-        );
-        setSuggestions(filtered.slice(0, 8)); // Show top 8 matches
-        setShowSuggestions(true);
-        setSelectedSuggestionIndex(-1);
+      // Add debounce for better UX
+      const searchTimeout = setTimeout(async () => {
+        try {
+          const results = await universityService.searchUniversities(university);
+          setSuggestions(results);
+          setShowSuggestions(true);
+          setSelectedSuggestionIndex(-1);
+        } catch (err) {
+          console.error('Failed to search universities:', err);
+          setSuggestions([]);
+        }
         setSearching(false);
-      }, 150); // 150ms delay for smoother typing experience
+      }, 200); // Reduced debounce since we're searching locally
 
       return () => {
         clearTimeout(searchTimeout);
@@ -72,7 +60,7 @@ export function UniversityForm({ onNext, onBack, onUpdateData, firstName, initia
       setSelectedSuggestionIndex(-1);
       setSearching(false);
     }
-  }, [university, allUniversities]);
+  }, [university]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -187,7 +175,7 @@ export function UniversityForm({ onNext, onBack, onUpdateData, firstName, initia
                 }}
                 onKeyDown={handleKeyDown}
                 onFocus={() => {
-                  if (university.length > 1 && suggestions.length > 0) {
+                  if (university.length > 2 && suggestions.length > 0) {
                     setShowSuggestions(true);
                   }
                 }}
@@ -198,12 +186,11 @@ export function UniversityForm({ onNext, onBack, onUpdateData, firstName, initia
                     setSelectedSuggestionIndex(-1);
                   }, 300);
                 }}
-                placeholder={loading ? "Loading universities..." : "Start typing your university name..."}
-                disabled={loading}
+                placeholder={isPreloading ? "Loading universities..." : isReady ? "Start typing your university name..." : "University database loading..."}
                 className={`w-full px-4 py-4 pr-12 text-lg border-2 border-slate-200 rounded-xl
                          focus:border-[#2563eb] focus:ring-0 focus:outline-none
                          transition-all duration-200 placeholder:text-slate-400
-                         bg-white/80 backdrop-blur-sm ${loading ? 'cursor-not-allowed opacity-50' : ''}`}
+                         bg-white/80 backdrop-blur-sm ${isPreloading ? 'opacity-75' : ''}`}
                 autoComplete="organization"
                 whileFocus={{ scale: 1.02 }}
                 transition={{ type: "spring", stiffness: 300, damping: 30 }}
@@ -211,7 +198,17 @@ export function UniversityForm({ onNext, onBack, onUpdateData, firstName, initia
               
               {/* Search/Loading Icon */}
               <div className="absolute right-4 top-1/2 transform -translate-y-1/2">
-                {searching ? (
+                {isPreloading ? (
+                  <motion.div
+                    animate={{ rotate: 360 }}
+                    transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+                    className="w-5 h-5"
+                  >
+                    <svg className="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4" />
+                    </svg>
+                  </motion.div>
+                ) : searching ? (
                   <motion.div
                     animate={{ rotate: 360 }}
                     transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
@@ -234,7 +231,7 @@ export function UniversityForm({ onNext, onBack, onUpdateData, firstName, initia
             </div>
 
             {/* Search Suggestions Dropdown */}
-            {(showSuggestions && suggestions.length > 0) || searching ? (
+            {((showSuggestions && suggestions.length > 0) || searching) && isReady ? (
               <motion.div
                 initial={{ opacity: 0, y: -10, scale: 0.95 }}
                 animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -339,11 +336,29 @@ export function UniversityForm({ onNext, onBack, onUpdateData, firstName, initia
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.6, delay: 0.8 }}
-            className="text-center"
+            className="text-center space-y-2"
           >
             <p className="text-sm text-slate-500">
               Step 2 of 7 • This helps us connect you with peers at your institution
             </p>
+            {isPreloading && (
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="flex items-center justify-center space-x-2 text-xs text-blue-600"
+              >
+                <motion.div
+                  animate={{ rotate: 360 }}
+                  transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+                  className="w-3 h-3"
+                >
+                  <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4" />
+                  </svg>
+                </motion.div>
+                <span>Loading university database...</span>
+              </motion.div>
+            )}
           </motion.div>
         </motion.form>
 

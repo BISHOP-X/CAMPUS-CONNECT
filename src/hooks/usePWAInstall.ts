@@ -9,10 +9,33 @@ interface BeforeInstallPromptEvent extends Event {
   prompt(): Promise<void>;
 }
 
+// Helper function to detect iOS
+const isIOS = () => {
+  return /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream;
+};
+
+// Helper function to detect if running in Safari
+const isIOSSafari = () => {
+  const ua = navigator.userAgent;
+  return /iPad|iPhone|iPod/.test(ua) && /Safari/.test(ua) && !/Chrome|CriOS|FxiOS/.test(ua);
+};
+
+// Helper function to detect if already installed as PWA
+const isRunningStandalone = () => {
+  return window.matchMedia('(display-mode: standalone)').matches || 
+         (window.navigator as any).standalone === true;
+};
+
 export function usePWAInstall() {
   const [installPrompt, setInstallPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [isInstallable, setIsInstallable] = useState(false);
   const [isInstalled, setIsInstalled] = useState(false);
+
+  console.log('PWA Install Hook State:', {
+    installPrompt: !!installPrompt,
+    isInstallable,
+    isInstalled
+  });
 
   useEffect(() => {
     const handleBeforeInstallPrompt = (e: Event) => {
@@ -32,11 +55,13 @@ export function usePWAInstall() {
     };
 
     // Check if app is already installed
-    if (window.matchMedia('(display-mode: standalone)').matches) {
+    if (isRunningStandalone()) {
       console.log('📱 PWA already running in standalone mode');
       setIsInstalled(true);
+      return;
     }
 
+    // Set up PWA install listeners for standard browsers (Android, Windows, etc.)
     console.log('🔄 Setting up PWA install listeners...');
     window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
     window.addEventListener('appinstalled', handleAppInstalled);

@@ -1,4 +1,5 @@
 import { LayoutDashboard, Users, MessageSquare, GraduationCap, Users2, Trophy, Calendar, BookOpen } from "lucide-react";
+import { DownloadAppButton } from "./DownloadAppButton";
 import { NavLink, useLocation } from "react-router-dom";
 
 const navigationItems = [
@@ -80,10 +81,13 @@ export function AppSidebar() {
         </ul>
       </nav>
 
-      {/* Footer */}
+      {/* Footer with Download App */}
       <div className="p-3 border-t border-slate-100">
-        <div className="flex justify-center">
-          <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+        <div className="flex flex-col items-center space-y-3">
+          <div className="flex justify-center">
+            <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+          </div>
+          <DownloadAppButton />
         </div>
       </div>
     </div>

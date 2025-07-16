@@ -198,14 +198,6 @@ body::-webkit-scrollbar {
 
 @layer components {
   /* Campus Connect Custom Components */
-  .auth-card {
-    @apply bg-card border border-border rounded-lg shadow-[var(--shadow-card)] p-8 w-full max-w-md mx-auto;
-  }
-  
-  .auth-input {
-    @apply transition-[var(--transition-fast)] border-input focus:border-ring focus:ring-2 focus:ring-ring/20;
-  }
-  
   .btn-primary {
     @apply bg-primary hover:bg-[hsl(var(--primary-hover))] text-primary-foreground transition-[var(--transition-fast)] transform hover:scale-[1.02] active:scale-[0.98];
   }
